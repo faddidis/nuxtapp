@@ -5,15 +5,15 @@ export default defineNuxtPlugin((nuxtApp) => {
   const runtimeConfig = useRuntimeConfig()
   
   const apolloClient = new ApolloClient({
-    uri: runtimeConfig.public.graphqlHttp,
+    uri: '/graphql',
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
-        fetchPolicy: 'no-cache',
+        fetchPolicy: 'cache-and-network',
         errorPolicy: 'all',
       },
       query: {
-        fetchPolicy: 'no-cache',
+        fetchPolicy: 'network-only',
         errorPolicy: 'all',
       },
     },

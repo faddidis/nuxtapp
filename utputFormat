@@ -1,0 +1,17 @@
+HTTP/1.1 500 Internal Server Error
+Server: nginx
+Date: Thu, 24 Apr 2025 17:11:01 GMT
+Content-Type: application/json; charset=UTF-8
+Transfer-Encoding: chunked
+Connection: keep-alive
+Access-Control-Allow-Origin: https://wp.chinpoko.ru
+Access-Control-Allow-Headers: Authorization, Content-Type, woocommerce-session
+Access-Control-Max-Age: 600
+X-Robots-Tag: noindex
+X-Content-Type-Options: nosniff
+X-GraphQL-URL: wp.chinpoko.ru/graphql
+Access-Control-Allow-Credentials: true
+Access-Control-Expose-Headers: woocommerce-session
+woocommerce-session: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL3dwLmNoaW5wb2tvLnJ1IiwiaWF0IjoxNzQ1NTE0NjYxLCJuYmYiOjE3NDU1MTQ2NjEsImV4cCI6MTc0NTY4NzQ2MSwiZGF0YSI6eyJjdXN0b21lcl9pZCI6InRfNDM3NzE5N2ZlOGZjMWJhN2YxYzUxMTYwZGYxMDk1In19.U33khXipIxm3Sk-a7p3c3OgWbHw2XjRJ_0hkYBSwcmw
+
+{"errors":[{"message":"Expected JSON object or array for \"application\/json\" request, but failed to parse because: Syntax error"}]}

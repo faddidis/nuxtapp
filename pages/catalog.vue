@@ -1,58 +1,72 @@
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-      <h1 class="text-3xl font-bold">Аксессуары</h1>
-      <div class="mt-4 md:mt-0">
-        <select 
-          v-model="sortBy"
-          class="border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="price_asc">По цене (возрастание)</option>
-          <option value="price_desc">По цене (убывание)</option>
-          <option value="name_asc">По названию (А-Я)</option>
-          <option value="name_desc">По названию (Я-А)</option>
-        </select>
-      </div>
-    </div>
-
+  <div class="container mx-auto px-4 py-16">
     <div class="flex flex-col md:flex-row gap-8">
       <!-- Фильтры -->
-      <div class="w-full md:w-64 space-y-6">
-        <div class="bg-white p-4 rounded-lg shadow">
-          <h3 class="font-semibold mb-4">Категории</h3>
+      <div class="w-full md:w-1/4">
+        <div class="sticky top-4">
+          <h2 class="text-xl font-bold mb-4">Категории</h2>
           <div class="space-y-2">
-            <label v-for="category in categories" :key="category.id" class="flex items-center">
-              <input 
-                type="checkbox" 
-                :value="category.slug"
+            <div v-for="category in categories" :key="category.id" class="flex items-center">
+              <input
+                :id="category.slug"
                 v-model="selectedCategories"
+                type="checkbox"
+                :value="category.slug"
                 class="mr-2"
-              >
-              {{ category.name }}
-            </label>
+              />
+              <label :for="category.slug">{{ category.name }}</label>
+            </div>
           </div>
+
+          <h2 class="text-xl font-bold mt-8 mb-4">Сортировка</h2>
+          <select v-model="sortBy" class="w-full p-2 border rounded">
+            <option value="price-asc">По цене (возрастание)</option>
+            <option value="price-desc">По цене (убывание)</option>
+          </select>
         </div>
       </div>
 
       <!-- Товары -->
-      <div class="flex-1">
-        <div v-if="loading" class="text-center py-8">
-          <p class="text-xl text-gray-600">Загрузка товаров...</p>
+      <div class="w-full md:w-3/4">
+        <div v-if="categoriesLoading || productsLoading" class="text-center">
+          Загрузка...
         </div>
-        <div v-else-if="error" class="text-center py-8">
-          <p class="text-xl text-red-600">Произошла ошибка при загрузке товаров</p>
-          <p class="text-sm text-gray-500 mt-2">{{ error.message }}</p>
+
+        <div v-else-if="categoriesError || productsError" class="text-red-500">
+          Произошла ошибка при загрузке данных
         </div>
-        <div v-else-if="filteredProducts.length === 0" class="text-center py-8">
-          <p class="text-xl text-gray-600">Товары не найдены</p>
-        </div>
-        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <ProductCard
+
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
             v-for="product in filteredProducts"
             :key="product.id"
-            :product="product"
-            @add-to-cart="handleAddToCart"
-          />
+            class="border rounded-lg overflow-hidden"
+          >
+            <img
+              v-if="product.image"
+              :src="product.image.sourceUrl"
+              :alt="product.image.altText"
+              class="w-full h-48 object-cover"
+            />
+            <div class="p-4">
+              <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+              <div class="mt-2">
+                <span class="text-xl font-bold">{{ product.price }}</span>
+                <span
+                  v-if="product.regularPrice !== product.price"
+                  class="ml-2 text-gray-500 line-through"
+                >
+                  {{ product.regularPrice }}
+                </span>
+              </div>
+              <button
+                @click="handleAddToCart(product)"
+                class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+              >
+                В корзину
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -60,92 +74,83 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from '#imports'
+import { computed, ref, onMounted } from '#imports'
 import { useQuery } from '#imports'
-import gql from 'graphql-tag'
-import { useRoute } from 'vue-router'
-
-const route = useRoute()
-const sortBy = ref('price_asc')
-const selectedCategories = ref<string[]>([])
 
 interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  count: number;
-  parent?: {
-    node: {
-      id: string;
-    };
-  };
+  id: string
+  name: string
+  slug: string
+  count?: number
 }
 
-interface ProductCategory {
-  id: string;
-  name: string;
-  slug: string;
+interface ProductImage {
+  sourceUrl: string
+  altText: string
 }
 
 interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  price: string;
-  regularPrice: string;
-  salePrice: string;
-  stockStatus: string;
-  image?: {
-    sourceUrl: string;
-    altText: string;
-  };
+  id: string
+  name: string
+  slug: string
+  price: string
+  regularPrice: string
+  salePrice: string
+  stockStatus: string
+  image?: ProductImage
   productCategories?: {
-    nodes: ProductCategory[];
-  };
+    edges: Array<{
+      node: Category
+    }>
+  }
 }
 
-const CATEGORIES_QUERY = gql`
+const CATEGORIES_QUERY = `
   query GetCategories {
-    productCategories(first: 100, where: { parent: 0 }) {
+    productCategories {
       edges {
         node {
           id
           name
           slug
-          count
-          parent {
-            node {
-              id
-            }
-          }
         }
       }
     }
   }
 `
 
-const PRODUCTS_QUERY = gql`
+const PRODUCTS_QUERY = `
   query GetProducts {
     products(first: 100) {
-      nodes {
-        id
-        name
-        slug
-        ... on SimpleProduct {
-          price
-          regularPrice
-          salePrice
-          stockStatus
-        }
-        image {
-          sourceUrl
-          altText
-        }
-        productCategories {
-          nodes {
-            id
-            name
-            slug
+      edges {
+        node {
+          id
+          name
+          slug
+          image {
+            sourceUrl
+            altText
+          }
+          productCategories {
+            edges {
+              node {
+                id
+                name
+                slug
+              }
+            }
+          }
+          ... on SimpleProduct {
+            price
+            regularPrice
+            salePrice
+            stockStatus
+          }
+          ... on VariableProduct {
+            price
+            regularPrice
+            salePrice
+            stockStatus
           }
         }
       }
@@ -153,81 +158,87 @@ const PRODUCTS_QUERY = gql`
   }
 `
 
-const { result: categoriesResult, loading: categoriesLoading } = useQuery(CATEGORIES_QUERY)
-const { result, loading, error, refetch } = useQuery(PRODUCTS_QUERY)
+const sortBy = ref('price-asc')
+const selectedCategories = ref<string[]>([])
+
+const { data: categoriesData, loading: categoriesLoading, error: categoriesError, fetch: fetchCategories } = useQuery<{
+  productCategories: {
+    edges: Array<{
+      node: Category
+    }>
+  }
+}>(CATEGORIES_QUERY)
+
+const { data: productsData, loading: productsLoading, error: productsError, fetch: fetchProducts } = useQuery<{
+  products: {
+    edges: Array<{
+      node: Product
+    }>
+  }
+}>(PRODUCTS_QUERY)
 
 const categories = computed(() => {
   try {
-    return categoriesResult.value?.productCategories?.edges?.map((edge: { node: Category }) => edge.node) || []
-  } catch (e) {
-    console.error('Ошибка при обработке категорий:', e)
+    if (!categoriesData.value?.productCategories?.edges) {
+      return []
+    }
+    return categoriesData.value.productCategories.edges.map(edge => edge.node)
+  } catch (error) {
+    console.error('Ошибка при обработке категорий:', error)
     return []
   }
 })
 
 const products = computed(() => {
   try {
-    const nodes = result.value?.products?.nodes || []
-    return nodes.map((node: Product) => ({
-      ...node,
-      price: node.price || '0',
-      regularPrice: node.regularPrice || node.price || '0',
-      salePrice: node.salePrice || node.price || '0',
-      stockStatus: node.stockStatus || 'IN_STOCK'
-    }))
-  } catch (e) {
-    console.error('Ошибка при обработке товаров:', e)
+    if (!productsData.value?.products?.edges) {
+      return []
+    }
+    return productsData.value.products.edges.map(edge => edge.node)
+  } catch (error) {
+    console.error('Ошибка при обработке товаров:', error)
     return []
   }
 })
 
 const filteredProducts = computed(() => {
-  let filtered = [...products.value]
+  if (!products.value) return []
   
-  // Фильтрация по категориям
+  let result = [...products.value]
+  
   if (selectedCategories.value.length > 0) {
-    filtered = filtered.filter(product => 
-      product.productCategories?.nodes?.some(category => 
-        selectedCategories.value.includes(category.slug)
+    result = result.filter(product => 
+      product.productCategories?.edges.some(edge => 
+        selectedCategories.value.includes(edge.node.slug)
       )
     )
   }
   
-  // Сортировка
-  filtered.sort((a, b) => {
-    switch (sortBy.value) {
-      case 'price_asc':
-        return parseFloat(a.price) - parseFloat(b.price)
-      case 'price_desc':
-        return parseFloat(b.price) - parseFloat(a.price)
-      case 'name_asc':
-        return a.name.localeCompare(b.name)
-      case 'name_desc':
-        return b.name.localeCompare(a.name)
-      default:
-        return 0
-    }
-  })
+  if (sortBy.value === 'price-asc') {
+    result.sort((a, b) => {
+      const priceA = parseFloat(a.price || '0')
+      const priceB = parseFloat(b.price || '0')
+      return priceA - priceB
+    })
+  } else if (sortBy.value === 'price-desc') {
+    result.sort((a, b) => {
+      const priceA = parseFloat(a.price || '0')
+      const priceB = parseFloat(b.price || '0')
+      return priceB - priceA
+    })
+  }
   
-  return filtered
+  return result
 })
 
-// Следим за изменениями в URL
-watch(() => route.query.category, async (newCategory) => {
-  if (newCategory) {
-    const category = categories.value.find((cat: Category) => cat.slug === newCategory)
-    if (category) {
-      selectedCategories.value = [category.slug]
-    }
-  } else {
-    selectedCategories.value = []
-  }
-}, { immediate: true })
-
 const handleAddToCart = (product: Product) => {
-  // TODO: Реализовать добавление в корзину
-  console.log('Добавление в корзину:', product)
+  console.log('Товар добавлен в корзину:', product.name)
 }
+
+onMounted(() => {
+  fetchCategories()
+  fetchProducts()
+})
 </script>
 
 <style scoped>

@@ -18,7 +18,7 @@
     </div>
     <div v-else-if="error" class="text-center py-8">
       <p class="text-xl text-red-600">Произошла ошибка при загрузке категорий</p>
-      <p class="text-sm text-gray-500 mt-2">{{ error.message }}</p>
+      <p class="text-sm text-gray-500 mt-2">{{ error }}</p>
     </div>
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       <div 
@@ -68,9 +68,17 @@ interface CategoryEdge {
   node: Category;
 }
 
+interface CategoriesResponse {
+  productCategories: {
+    edges: Array<{
+      node: Category
+    }>
+  }
+}
+
 const router = useRouter()
 
-const CATEGORIES_QUERY = gql`
+const CATEGORIES_QUERY = `
   query GetCategories {
     productCategories(first: 6, where: { parent: 0 }) {
       edges {
@@ -88,11 +96,11 @@ const CATEGORIES_QUERY = gql`
   }
 `
 
-const { result, loading, error } = useQuery(CATEGORIES_QUERY)
+const { data, loading, error } = useQuery<CategoriesResponse>(CATEGORIES_QUERY)
 
 const categories = computed(() => {
   try {
-    return result.value?.productCategories?.edges?.map((edge: CategoryEdge) => edge.node) || []
+    return data.value?.productCategories?.edges?.map((edge) => edge.node) || []
   } catch (e) {
     console.error('Ошибка при обработке категорий:', e)
     return []
