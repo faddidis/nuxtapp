@@ -2,15 +2,19 @@ version: '3.8'
 
 services:
   nuxt-dev:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: nuxt-dev
     ports:
       - "3000:3000"
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/.nuxt
     environment:
       - NUXT_PUBLIC_GRAPHQL_HTTP=https://wp.chinpoko.ru/graphql
       - NUXT_PUBLIC_GRAPHQL_WS=wss://wp.chinpoko.ru/graphql
       - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
     command: npm run dev
