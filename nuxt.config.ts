@@ -3,12 +3,11 @@ import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
   ssr: true,
-  target: 'server',
   devtools: { enabled: true },
   compatibilityDate: '2025-04-24',
   modules: [
     '@nuxtjs/tailwindcss',
-    '@nuxtjs/apollo'
+    'nuxt-graphql-request'
   ],
   runtimeConfig: {
     // приватные значения (server-only) можно указать здесь
@@ -17,19 +16,28 @@ export default defineNuxtConfig({
       graphqlHttp: process.env.GRAPHQL_HTTP || 'https://wp.chinpoko.ru/graphql'
     }
   },
+  // @ts-ignore - игнорируем ошибку типизации для graphql конфигурации
+  graphql: {
+    clients: {
+      default: {
+        endpoint: process.env.GRAPHQL_HTTP || 'https://wp.chinpoko.ru/graphql',
+        options: {
+          credentials: 'same-origin',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      }
+    }
+  },
   nitro: {
     devProxy: {
       '/graphql': {
         target: process.env.GRAPHQL_HTTP || 'https://wp.chinpoko.ru/graphql',
         changeOrigin: true,
         secure: false
-      }
-    }
-  },
-  apollo: {
-    clientConfigs: {
-      default: {
-        httpEndpoint: '/graphql'
       }
     }
   },

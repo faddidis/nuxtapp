@@ -54,14 +54,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useQuery } from '@vue/apollo-composable'
-import gql from 'graphql-tag'
+import { useQuery } from '~/composables/useQuery'
 import { useCart } from '~/composables/useCart'
 
 const route = useRoute()
 const slug = route.params.slug as string
 
-const PRODUCT_QUERY = gql`
+const PRODUCT_QUERY = `
   query GetProduct($slug: ID!) {
     product(id: $slug, idType: SLUG) {
       id
@@ -93,13 +92,34 @@ const PRODUCT_QUERY = gql`
   }
 `
 
-const { result, loading, error } = useQuery(PRODUCT_QUERY, {
-  slug
-})
+const { data, loading, error, fetch } = useQuery<{
+  product: {
+    id: string
+    name: string
+    description: string
+    price: string
+    regularPrice: string
+    salePrice: string
+    stockStatus: string
+    image: {
+      sourceUrl: string
+      altText: string
+    }
+    galleryImages: {
+      nodes: Array<{
+        sourceUrl: string
+        altText: string
+      }>
+    }
+  }
+}>(PRODUCT_QUERY, { slug })
 
-const product = computed(() => result.value?.product)
+// Вызываем fetch() сразу после создания запроса
+fetch()
 
-const currentImage = ref(product.value?.image)
+const product = computed(() => data.value?.product)
+
+const currentImage = ref<{ sourceUrl: string; altText: string } | null>(null)
 
 watch(product, (newProduct) => {
   if (newProduct?.image) {
@@ -107,7 +127,7 @@ watch(product, (newProduct) => {
   }
 }, { immediate: true })
 
-const setCurrentImage = (image: any) => {
+const setCurrentImage = (image: { sourceUrl: string; altText: string }) => {
   currentImage.value = image
 }
 
@@ -127,4 +147,12 @@ const addToCart = () => {
     console.log('Товар добавлен в корзину:', product.value.name)
   }
 }
+
+watch(data, (newData) => {
+  console.log('GraphQL response:', newData)
+}, { immediate: true })
+
+watch(error, (newError) => {
+  console.log('GraphQL error:', newError)
+}, { immediate: true })
 </script> 

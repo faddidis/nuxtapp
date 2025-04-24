@@ -14,7 +14,7 @@ interface GraphQLResponse<T> {
 
 export const useGraphQL = () => {
   const config = useRuntimeConfig()
-  const endpoint = '/graphql'
+  const endpoint = '/graphql' // Используем прокси-эндпоинт
 
   const execute = async <T>(query: string, variables?: Record<string, any>): Promise<GraphQLResponse<T>> => {
     try {
@@ -24,8 +24,7 @@ export const useGraphQL = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        mode: 'cors',
-        credentials: 'include',
+        credentials: 'same-origin',
         body: JSON.stringify({
           query,
           variables,
