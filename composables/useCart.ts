@@ -17,26 +17,33 @@ const CART_STORAGE_KEY = 'nuxt-shop-cart'
 export const useCart = () => {
   const items = ref<CartItem[]>([])
   
+  // Проверка на наличие localStorage (только на клиенте)
+  const isClient = process.client
+  
   // Загрузка корзины из localStorage при инициализации
   onMounted(() => {
-    try {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY)
-      if (savedCart) {
-        items.value = JSON.parse(savedCart)
+    if (isClient) {
+      try {
+        const savedCart = localStorage.getItem(CART_STORAGE_KEY)
+        if (savedCart) {
+          items.value = JSON.parse(savedCart)
+        }
+      } catch (error) {
+        console.error('Ошибка при загрузке корзины из localStorage:', error)
       }
-    } catch (error) {
-      console.error('Ошибка при загрузке корзины из localStorage:', error)
     }
   })
   
-  // Сохранение корзины в localStorage при изменениях
-  watch(items, (newItems) => {
-    try {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newItems))
-    } catch (error) {
-      console.error('Ошибка при сохранении корзины в localStorage:', error)
-    }
-  }, { deep: true })
+  // Сохранение корзины в localStorage при изменениях (только на клиенте)
+  if (isClient) {
+    watch(items, (newItems) => {
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(newItems))
+      } catch (error) {
+        console.error('Ошибка при сохранении корзины в localStorage:', error)
+      }
+    }, { deep: true })
+  }
 
   const addToCart = (product: any) => {
     const existingItem = items.value.find(item => item.id === product.id)

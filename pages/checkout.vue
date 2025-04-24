@@ -158,7 +158,7 @@ const submitOrder = async () => {
       lineItems
     });
 
-    const orderResponse = response?.data?.createOrder?.order;
+    const orderResponse = response?.createOrder?.order;
     if (orderResponse) {
       // Очистить корзину и перенаправить на страницу успешного оформления заказа
       cartItems.value = [];

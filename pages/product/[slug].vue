@@ -6,37 +6,44 @@
     <div v-else-if="error" class="text-center text-red-600">
       {{ error }}
     </div>
-    <ClientOnly>
-      <div v-if="!loading && !error" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="space-y-4">
-          <img 
-            v-if="currentImage?.sourceUrl"
-            :src="currentImage.sourceUrl" 
-            :alt="currentImage.altText || product?.name"
-            class="w-full h-auto rounded-lg"
-          />
-          <div v-if="product?.galleryImages?.nodes?.length" class="grid grid-cols-4 gap-2">
-            <img 
-              v-for="(image, index) in product.galleryImages.nodes" 
-              :key="index"
-              :src="image.sourceUrl"
-              :alt="image.altText"
-              class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75"
-              @click="setCurrentImage(image)"
-            />
-          </div>
+    <div v-else-if="product" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="space-y-4">
+        <img 
+          v-if="currentImage?.sourceUrl"
+          :src="currentImage.sourceUrl" 
+          :alt="currentImage.altText || product.name"
+          class="w-full h-auto rounded-lg"
+        />
+        <div v-if="product.galleryImages?.nodes?.length" class="grid grid-cols-4 gap-2">
+          <ClientOnly>
+            <template #default>
+              <img 
+                v-for="(image, index) in product.galleryImages.nodes" 
+                :key="index"
+                :src="image.sourceUrl"
+                :alt="image.altText"
+                class="w-full h-24 object-cover rounded cursor-pointer hover:opacity-75"
+                @click="setCurrentImage(image)"
+              />
+            </template>
+            <template #fallback>
+              <div class="w-full h-24 bg-gray-200 rounded"></div>
+            </template>
+          </ClientOnly>
         </div>
-        <div class="space-y-6">
-          <h1 class="text-3xl font-bold text-gray-900">{{ product?.name }}</h1>
-          <div class="flex items-center space-x-4">
-            <p class="text-2xl font-semibold text-gray-900">
-              {{ formatPrice(product?.price) }} ₽
-            </p>
-            <p v-if="product?.regularPrice && product.regularPrice !== product.price" class="text-lg text-gray-500 line-through">
-              {{ formatPrice(product?.regularPrice) }} ₽
-            </p>
-          </div>
-          <div class="prose max-w-none" v-html="product?.description"></div>
+      </div>
+      <div class="space-y-6">
+        <h1 class="text-3xl font-bold text-gray-900">{{ product.name }}</h1>
+        <div class="flex items-center space-x-4">
+          <p class="text-2xl font-semibold text-gray-900">
+            {{ formatPrice(product.price) }} ₽
+          </p>
+          <p v-if="product.regularPrice && product.regularPrice !== product.price" class="text-lg text-gray-500 line-through">
+            {{ formatPrice(product.regularPrice) }} ₽
+          </p>
+        </div>
+        <div class="prose max-w-none" v-html="product.description"></div>
+        <ClientOnly>
           <button 
             @click="addToCart"
             class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-300 flex items-center justify-center space-x-2"
@@ -46,14 +53,15 @@
               <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
             </svg>
           </button>
-        </div>
+          <template #fallback>
+            <div class="w-full bg-gray-300 h-12 rounded-lg animate-pulse"></div>
+          </template>
+        </ClientOnly>
       </div>
-      <template #fallback>
-        <div class="text-center py-8">
-          <p>Загрузка данных о товаре...</p>
-        </div>
-      </template>
-    </ClientOnly>
+    </div>
+    <div v-else class="text-center py-8">
+      <p>Товар не найден</p>
+    </div>
   </div>
 </template>
 
@@ -62,6 +70,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuery } from '~/composables/useQuery'
 import { useCart } from '~/composables/useCart'
+import { useHead } from '#imports'
 
 const route = useRoute()
 const slug = computed(() => route.params.slug as string)
@@ -164,11 +173,16 @@ const addToCart = () => {
   }
 }
 
-watch(data, (newData) => {
-  console.log('GraphQL response:', newData)
-}, { immediate: true })
-
-watch(error, (newError) => {
-  console.log('GraphQL error:', newError)
-}, { immediate: true })
+// Добавляем метаданные для SEO
+useHead(() => ({
+  title: product.value?.name ? `${product.value.name} | Интернет-магазин` : 'Загрузка товара...',
+  meta: [
+    { 
+      name: 'description', 
+      content: product.value?.description 
+        ? product.value.description.replace(/<[^>]*>/g, '').substring(0, 160) 
+        : 'Описание товара загружается...'
+    }
+  ]
+}))
 </script> 

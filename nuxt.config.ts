@@ -2,6 +2,7 @@
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
+  // Включаем SSR явно
   ssr: true,
   devtools: { enabled: true },
   compatibilityDate: '2025-04-24',
@@ -33,6 +34,15 @@ export default defineNuxtConfig({
     }
   },
   nitro: {
+    // Улучшенные настройки предварительного рендеринга
+    prerender: {
+      // Предварительно рендерим страницы для лучшей производительности
+      crawlLinks: true,
+      routes: [
+        '/',
+        '/catalog'
+      ]
+    },
     devProxy: {
       '/graphql': {
         target: process.env.GRAPHQL_HTTP || 'https://wp.chinpoko.ru/graphql',
@@ -52,7 +62,11 @@ export default defineNuxtConfig({
       '/graphql': { 
         cors: true,
         headers: { 'cache-control': 'no-cache' }
-      }
+      },
+      // Правила для SSR
+      '/': { ssr: true },
+      '/catalog': { ssr: true },
+      '/product/**': { ssr: true }
     }
   },
   css: ['~/assets/css/main.css'],
@@ -95,6 +109,7 @@ export default defineNuxtConfig({
   experimental: {
     payloadExtraction: true, // Извлекает полезную нагрузку из маршрутов для более быстрой загрузки
     treeshakeClientOnly: true, // Удаляет ClientOnly компоненты из серверного бандла
+    renderJsonPayloads: true // Улучшает работу с данными при SSR
   },
   vite: {
     build: {

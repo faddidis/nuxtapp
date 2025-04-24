@@ -1,12 +1,38 @@
+# Зависимости
 node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Кэш и сборки
 .nuxt
-dist
+.nitro
+.cache
 .output
+dist
+
+# Docker файлы
+.dockerignore
+docker-compose*
+Dockerfile*
+
+# Системные файлы
 .git
+.github
+.gitignore
+.DS_Store
+.editorconfig
+.vscode
+
+# Тесты
+coverage
+.nyc_output
+
+# Среда выполнения
 .env
 .env.*
 !.env.example
-*.log
-.DS_Store
-.idea
-.vscode 
+
+# Логи
+logs
+*.log 

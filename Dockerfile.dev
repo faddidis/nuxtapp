@@ -1,0 +1,22 @@
+FROM node:20-bullseye-slim
+
+# Установка необходимых пакетов для разработки
+RUN apt-get update && \
+    apt-get install -y python3 make g++ git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Копирование файлов package.json и package-lock.json
+COPY package*.json ./
+
+# Отвечает за запуск сервера разработки
+EXPOSE 3000
+
+ENV HOST=0.0.0.0
+ENV PORT=3000
+ENV NODE_ENV=development
+
+# Запуск в режиме разработки будет происходить через команду в docker-compose
+CMD ["npm", "run", "dev"] 
