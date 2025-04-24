@@ -24,7 +24,7 @@ export default defineNuxtConfig({
   apollo: {
     clients: {
       default: {
-        httpEndpoint: 'https://wp.chinpoko.ru/graphql'
+        httpEndpoint: process.env.NUXT_PUBLIC_GRAPHQL_HTTP || 'https://wp.chinpoko.ru/graphql'
       }
     }
   },

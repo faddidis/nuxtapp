@@ -60,10 +60,15 @@
 
           <button
             type="submit"
-            class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors duration-300"
+            :disabled="loading"
+            class="w-full bg-blue-600 text-white py-3 px-4 rounded-md hover:bg-blue-700 transition-colors duration-300 disabled:bg-blue-400"
           >
-            Подтвердить заказ
+            {{ loading ? 'Отправка заказа...' : 'Подтвердить заказ' }}
           </button>
+
+          <div v-if="error" class="text-red-600 text-sm mt-2">
+            {{ error }}
+          </div>
         </form>
       </div>
 
@@ -92,6 +97,9 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { useMutation } from '@vue/apollo-composable';
+import { CREATE_ORDER } from '~/graphql/mutations';
+import type { CustomerAddressInput, LineItemInput } from '~/graphql/mutations';
 
 interface CartItem {
   id: string;
@@ -111,6 +119,7 @@ interface OrderForm {
 
 // Здесь должны быть данные из хранилища корзины
 const cartItems = ref<CartItem[]>([]);
+const error = ref<string | null>(null);
 
 const order = ref<OrderForm>({
   name: '',
@@ -125,16 +134,40 @@ const totalPrice = computed(() => {
     .toFixed(2);
 });
 
+const { mutate: createOrder, loading } = useMutation(CREATE_ORDER);
+
 const submitOrder = async () => {
+  error.value = null;
+  
   try {
-    // TODO: Реализовать отправку заказа через GraphQL мутацию
-    console.log('Отправка заказа:', {
-      ...order.value,
-      items: cartItems.value,
-      totalPrice: totalPrice.value
+    const billing: CustomerAddressInput = {
+      firstName: order.value.name,
+      email: order.value.email,
+      phone: order.value.phone,
+      address1: order.value.address,
+    };
+
+    const lineItems: LineItemInput[] = cartItems.value.map(item => ({
+      productId: parseInt(item.id),
+      quantity: 1
+    }));
+
+    const response = await createOrder({
+      customerNote: '',
+      billing,
+      lineItems
     });
-  } catch (error) {
-    console.error('Ошибка при оформлении заказа:', error);
+
+    if (response?.data?.createOrder?.order) {
+      // Очистить корзину и перенаправить на страницу успешного оформления заказа
+      cartItems.value = [];
+      navigateTo('/order-success');
+    } else {
+      throw new Error('Не удалось создать заказ');
+    }
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : 'Произошла ошибка при оформлении заказа';
+    console.error('Ошибка при оформлении заказа:', e);
   }
 };
 </script>
