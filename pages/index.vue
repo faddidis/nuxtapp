@@ -4,15 +4,19 @@
     <p class="text-xl text-gray-600 mb-8">
       Здесь вы найдете широкий ассортимент товаров по выгодным ценам
     </p>
-    <NuxtLink 
-      to="/catalog" 
+    <button 
+      @click="navigateToCatalog"
       class="inline-block bg-blue-600 text-white px-8 py-4 rounded-lg text-lg font-medium hover:bg-blue-700 transition-colors duration-300"
     >
       Перейти в каталог
-    </NuxtLink>
+    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-// Можно добавить дополнительную логику здесь
+const router = useRouter();
+
+const navigateToCatalog = () => {
+  router.push('/catalog');
+};
 </script> 

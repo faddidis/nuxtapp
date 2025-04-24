@@ -30,5 +30,15 @@ export default defineNuxtConfig({
       tailwindcss: {},
       autoprefixer: {}
     }
+  },
+  build: {
+    transpile: [
+      '@apollo/client',
+      '@vue/apollo-composable',
+      'ts-invariant/process',
+    ]
+  },
+  typescript: {
+    strict: true
   }
 })
