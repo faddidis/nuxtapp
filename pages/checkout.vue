@@ -134,11 +134,11 @@ const totalPrice = computed(() => {
     .toFixed(2);
 });
 
-const { mutate: createOrder, loading } = useMutation(CREATE_ORDER);
+const { mutate: createOrder, loading } = useMutation(CREATE_ORDER as any);
 
 const submitOrder = async () => {
   error.value = null;
-  
+
   try {
     const billing: CustomerAddressInput = {
       firstName: order.value.name,
@@ -158,7 +158,8 @@ const submitOrder = async () => {
       lineItems
     });
 
-    if (response?.data?.createOrder?.order) {
+    const orderResponse = response?.data?.createOrder?.order;
+    if (orderResponse) {
       // Очистить корзину и перенаправить на страницу успешного оформления заказа
       cartItems.value = [];
       navigateTo('/order-success');
