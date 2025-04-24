@@ -1,8 +1,7 @@
 <template>
   <div>
     <CartWidget ref="cartWidget" />
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
+    <NuxtPage />
   </div>
 </template>
 
