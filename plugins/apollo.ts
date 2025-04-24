@@ -2,8 +2,10 @@ import { defineNuxtPlugin } from '#app'
 import { ApolloClient, InMemoryCache } from '@apollo/client/core'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  const runtimeConfig = useRuntimeConfig()
+  
   const apolloClient = new ApolloClient({
-    uri: 'https://wp.chinpoko.ru/graphql', // Замените на ваш реальный эндпоинт
+    uri: runtimeConfig.public.graphqlHttp,
     cache: new InMemoryCache(),
     defaultOptions: {
       watchQuery: {
