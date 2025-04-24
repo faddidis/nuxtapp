@@ -24,13 +24,5 @@ export default defineNuxtConfig({
       }
     }
   },
-  css: ['~/assets/css/main.css'],
-  typescript: {
-    strict: true,
-    typeCheck: true,
-    shim: false
-  },
-  eslint: {
-    enabled: false
-  }
+  css: ['~/assets/css/main.css']
 })
