@@ -97,7 +97,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { useMutation } from '@vue/apollo-composable';
+import { useMutation } from '#imports';
 import { CREATE_ORDER } from '~/graphql/mutations';
 import type { CustomerAddressInput, LineItemInput } from '~/graphql/mutations';
 

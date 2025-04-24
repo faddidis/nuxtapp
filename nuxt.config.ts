@@ -4,7 +4,11 @@ import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
   ssr: true,
   devtools: { enabled: true },
-  //…
+  compatibilityDate: '2025-04-24',
+  modules: [
+    '@nuxtjs/apollo',
+    '@nuxtjs/tailwindcss'
+  ],
   runtimeConfig: {
     // приватные значения (server-only) можно указать здесь
     public: {
@@ -13,10 +17,6 @@ export default defineNuxtConfig({
       graphqlWs: process.env.NUXT_PUBLIC_GRAPHQL_WS
     }
   },
-  modules: [
-    '@nuxtjs/apollo',
-    '@nuxtjs/tailwindcss'
-  ],
   apollo: {
     clients: {
       default: {
@@ -27,6 +27,10 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   typescript: {
     strict: true,
-    typeCheck: true
+    typeCheck: true,
+    shim: false
+  },
+  eslint: {
+    enabled: false
   }
 })

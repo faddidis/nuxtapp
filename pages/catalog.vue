@@ -13,9 +13,9 @@
 </template>
 
 <script setup lang="ts">
-import { useQuery } from '@vue/apollo-composable';
-import gql from 'graphql-tag';
 import { computed } from 'vue';
+import gql from 'graphql-tag';
+import { useAsyncQuery } from '@vue/apollo-composable';
 
 const PRODUCTS_QUERY = gql`
   query GetProducts {
@@ -35,7 +35,7 @@ const PRODUCTS_QUERY = gql`
   }
 `;
 
-const { result, loading, error } = useQuery(PRODUCTS_QUERY);
+const { data: result } = await useAsyncQuery(PRODUCTS_QUERY);
 
 const products = computed(() => result.value?.products?.nodes || []);
 
