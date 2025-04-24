@@ -42,30 +42,32 @@
             :key="product.id"
             class="border rounded-lg overflow-hidden"
           >
-            <img
-              v-if="product.image"
-              :src="product.image.sourceUrl"
-              :alt="product.image.altText"
-              class="w-full h-48 object-cover"
-            />
-            <div class="p-4">
-              <h3 class="text-lg font-semibold">{{ product.name }}</h3>
-              <div class="mt-2">
-                <span class="text-xl font-bold">{{ product.price }}</span>
-                <span
-                  v-if="product.regularPrice !== product.price"
-                  class="ml-2 text-gray-500 line-through"
-                >
-                  {{ product.regularPrice }}
-                </span>
+            <router-link :to="`/product/${product.slug}`">
+              <img
+                v-if="product.image"
+                :src="product.image.sourceUrl"
+                :alt="product.image.altText"
+                class="w-full h-48 object-cover"
+              />
+              <div class="p-4">
+                <h3 class="text-lg font-semibold">{{ product.name }}</h3>
+                <div class="mt-2">
+                  <span class="text-xl font-bold">{{ product.price }}</span>
+                  <span
+                    v-if="product.regularPrice !== product.price"
+                    class="ml-2 text-gray-500 line-through"
+                  >
+                    {{ product.regularPrice }}
+                  </span>
+                </div>
               </div>
-              <button
-                @click="handleAddToCart(product)"
-                class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                В корзину
-              </button>
-            </div>
+            </router-link>
+            <button
+              @click="handleAddToCart(product)"
+              class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+            >
+              В корзину
+            </button>
           </div>
         </div>
       </div>

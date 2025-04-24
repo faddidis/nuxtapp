@@ -55,5 +55,25 @@ export default defineNuxtConfig({
   },
   typescript: {
     strict: true
+  },
+  // Настройки для улучшения гидратации
+  vue: {
+    config: {
+      performance: true
+    }
+  },
+  app: {
+    // Возможность повторного использования состояния после ошибок гидратации
+    keepalive: true,
+    head: {
+      // Отключаем кэширование для предотвращения проблем с гидратацией
+      htmlAttrs: {
+        lang: 'ru'
+      },
+      meta: [
+        { name: 'cache-control', content: 'no-cache' },
+        { name: 'expires', content: '0' }
+      ]
+    }
   }
 })

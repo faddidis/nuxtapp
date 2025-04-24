@@ -12,11 +12,24 @@ interface GraphQLResponse<T> {
   }>
 }
 
+interface GraphQLError {
+  message: string
+  locations?: Array<{
+    line: number
+    column: number
+  }>
+  path?: string[]
+}
+
 export const useGraphQL = () => {
   const config = useRuntimeConfig()
   const endpoint = '/graphql' // Используем прокси-эндпоинт
 
   const execute = async <T>(query: string, variables?: Record<string, any>): Promise<GraphQLResponse<T>> => {
+    // Для отладки
+    console.log('GraphQL Query:', query)
+    console.log('GraphQL Variables:', variables)
+    
     try {
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -32,14 +45,21 @@ export const useGraphQL = () => {
       })
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error('HTTP Error Status:', response.status, response.statusText)
+        console.error('Error Response:', errorText)
+        throw new Error(`HTTP error! status: ${response.status}, message: ${response.statusText}`)
       }
 
       const data = await response.json()
       
-      if (data.errors) {
+      // Журналируем успешный ответ для отладки
+      console.log('GraphQL Response:', data)
+      
+      if (data.errors && data.errors.length > 0) {
         console.error('GraphQL Errors:', data.errors)
-        throw new Error(data.errors[0].message)
+        const errorMessage = data.errors.map((e: GraphQLError) => e.message).join(', ')
+        throw new Error(`GraphQL Error: ${errorMessage}`)
       }
 
       return data
