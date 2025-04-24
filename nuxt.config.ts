@@ -39,6 +39,20 @@ export default defineNuxtConfig({
         changeOrigin: true,
         secure: false
       }
+    },
+    // Оптимизация серверной части
+    minify: true,
+    compressPublicAssets: true,
+    routeRules: {
+      // Статические ресурсы кэшируются на длительный срок
+      '/assets/**': { 
+        headers: { 'cache-control': 'public, max-age=31536000, immutable' }
+      },
+      // API запросы кэшируются на короткий срок
+      '/graphql': { 
+        cors: true,
+        headers: { 'cache-control': 'no-cache' }
+      }
     }
   },
   css: ['~/assets/css/main.css'],
@@ -54,7 +68,8 @@ export default defineNuxtConfig({
     ]
   },
   typescript: {
-    strict: true
+    strict: true,
+    shim: false // Улучшение производительности TypeScript
   },
   // Настройки для улучшения гидратации
   vue: {
@@ -74,6 +89,28 @@ export default defineNuxtConfig({
         { name: 'cache-control', content: 'no-cache' },
         { name: 'expires', content: '0' }
       ]
+    }
+  },
+  // Оптимизация производительности
+  experimental: {
+    payloadExtraction: true, // Извлекает полезную нагрузку из маршрутов для более быстрой загрузки
+    treeshakeClientOnly: true, // Удаляет ClientOnly компоненты из серверного бандла
+  },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'vue-vendor': ['vue', 'vue-router'],
+            'ui-vendor': ['tailwindcss']
+          }
+        }
+      },
+      // Оптимизация изображений
+      assetsInlineLimit: 4096 // Инлайнит маленькие файлы
+    },
+    optimizeDeps: {
+      include: ['vue', 'vue-router']
     }
   }
 })

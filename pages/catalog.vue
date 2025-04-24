@@ -29,7 +29,7 @@
       <!-- Товары -->
       <div class="w-full md:w-3/4">
         <div v-if="categoriesLoading || productsLoading" class="text-center">
-          Загрузка...
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
         </div>
 
         <div v-else-if="categoriesError || productsError" class="text-red-500">
@@ -37,38 +37,12 @@
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div
-            v-for="product in filteredProducts"
+          <ProductCard
+            v-for="product in transformedProducts"
             :key="product.id"
-            class="border rounded-lg overflow-hidden"
-          >
-            <router-link :to="`/product/${product.slug}`">
-              <img
-                v-if="product.image"
-                :src="product.image.sourceUrl"
-                :alt="product.image.altText"
-                class="w-full h-48 object-cover"
-              />
-              <div class="p-4">
-                <h3 class="text-lg font-semibold">{{ product.name }}</h3>
-                <div class="mt-2">
-                  <span class="text-xl font-bold">{{ product.price }}</span>
-                  <span
-                    v-if="product.regularPrice !== product.price"
-                    class="ml-2 text-gray-500 line-through"
-                  >
-                    {{ product.regularPrice }}
-                  </span>
-                </div>
-              </div>
-            </router-link>
-            <button
-              @click="handleAddToCart(product)"
-              class="mt-4 w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-            >
-              В корзину
-            </button>
-          </div>
+            :product="product"
+            @add-to-cart="handleAddToCart"
+          />
         </div>
       </div>
     </div>
@@ -76,8 +50,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted } from '#imports'
+import { computed, ref, onMounted, useRoute } from '#imports'
 import { useQuery } from '#imports'
+import { useCart } from '~/composables/useCart'
+import ProductCard from '~/components/ProductCard.vue'
 
 interface Category {
   id: string
@@ -106,6 +82,18 @@ interface Product {
     }>
   }
 }
+
+const route = useRoute()
+const sortBy = ref('price-asc')
+const selectedCategories = ref<string[]>([])
+
+// Проверка параметров URL
+onMounted(() => {
+  const categoryParam = route.query.category as string
+  if (categoryParam) {
+    selectedCategories.value = [categoryParam]
+  }
+})
 
 const CATEGORIES_QUERY = `
   query GetCategories {
@@ -160,9 +148,6 @@ const PRODUCTS_QUERY = `
   }
 `
 
-const sortBy = ref('price-asc')
-const selectedCategories = ref<string[]>([])
-
 const { data: categoriesData, loading: categoriesLoading, error: categoriesError, fetch: fetchCategories } = useQuery<{
   productCategories: {
     edges: Array<{
@@ -203,6 +188,7 @@ const products = computed(() => {
   }
 })
 
+// Используем мемоизированные вычисления для фильтрации и сортировки
 const filteredProducts = computed(() => {
   if (!products.value) return []
   
@@ -233,9 +219,24 @@ const filteredProducts = computed(() => {
   return result
 })
 
+const { addToCart } = useCart()
+
 const handleAddToCart = (product: Product) => {
+  addToCart(product)
   console.log('Товар добавлен в корзину:', product.name)
 }
+
+const transformedProducts = computed(() => {
+  return filteredProducts.value.map(product => ({
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: product.price,
+    regularPrice: product.regularPrice,
+    image: product.image || { sourceUrl: '', altText: '' },
+    stockStatus: product.stockStatus
+  }))
+})
 
 onMounted(() => {
   fetchCategories()
