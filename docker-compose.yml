@@ -1,14 +1,16 @@
 version: '3.8'
 
 services:
-  nuxt:
-    image: node:22-alpine
+  nuxt-dev:
+    build: .
     container_name: nuxt-dev
-    working_dir: /app
-    volumes:
-      - ./:/app
-      - /app/node_modules
     ports:
       - "3000:3000"
-    command: sh -c "npm install && npm run dev -- --port=3000 --hostname=0.0.0.0"
-    restart: unless-stopped
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NUXT_PUBLIC_GRAPHQL_HTTP=https://wp.chinpoko.ru/graphql
+      - NUXT_PUBLIC_GRAPHQL_WS=wss://wp.chinpoko.ru/graphql
+      - NODE_ENV=development
+    command: npm run dev
