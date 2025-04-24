@@ -24,10 +24,7 @@ export default defineNuxtConfig({
   apollo: {
     clients: {
       default: {
-        // берем значения прямо из process.env для сборки,
-        // но можно передать useRuntimeConfig() в плагине
-        httpEndpoint: process.env.NUXT_PUBLIC_GRAPHQL_HTTP,
-        wsEndpoint: process.env.NUXT_PUBLIC_GRAPHQL_WS
+        httpEndpoint: 'https://wp.chinpoko.ru/graphql'
       }
     }
   },

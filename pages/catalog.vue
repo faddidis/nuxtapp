@@ -1,39 +1,47 @@
 <template>
-  <div class="catalog">
-    <div v-for="product in products" :key="product.id" class="product-card">
-      <img :src="product.image" :alt="product.name" />
-      <h3>{{ product.name }}</h3>
-      <p>{{ product.price }}</p>
-      <button @click="addToCart(product)">Добавить в корзину</button>
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Каталог товаров</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <ProductCard
+        v-for="product in products"
+        :key="product.id"
+        :product="product"
+        @add-to-cart="handleAddToCart"
+      />
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
+import { computed } from 'vue';
 
-const GET_PRODUCTS = gql`
+const PRODUCTS_QUERY = gql`
   query GetProducts {
-    products(first: 10) {
+    products {
       nodes {
         id
         name
-        price
+        ... on SimpleProduct {
+          price
+          regularPrice
+        }
         image {
-          uri
+          sourceUrl
         }
       }
     }
   }
 `;
 
-const { result } = useQuery(GET_PRODUCTS);
+const { result, loading, error } = useQuery(PRODUCTS_QUERY);
 
-const products = result?.products?.nodes || [];
+const products = computed(() => result.value?.products?.nodes || []);
 
-const addToCart = (product) => {
-  // �огика добавления товара в корзину
+const handleAddToCart = (product: any) => {
+  // TODO: Реализовать добавление в корзину
+  console.log('Добавление в корзину:', product);
 };
 </script>
 
