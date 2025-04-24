@@ -17,4 +17,8 @@ services:
       - NUXT_PUBLIC_GRAPHQL_WS=wss://wp.chinpoko.ru/graphql
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
-    command: npm run dev
+      - WATCHPACK_POLLING=true
+      - RUST_BACKTRACE=1
+    command: sh -c "npm cache clean --force && npm install && npm run dev"
+    tty: true
+    stdin_open: true
