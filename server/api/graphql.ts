@@ -14,6 +14,12 @@ export default defineEventHandler(async (event) => {
     
     // Журналируем для отладки
     console.log('Server API proxy for GraphQL received request')
+    console.log('Using GraphQL endpoint:', graphqlEndpoint || 'UNDEFINED URL')
+    
+    // Проверяем на пустой URL
+    if (!graphqlEndpoint) {
+      throw new Error('GraphQL endpoint URL is not defined')
+    }
     
     // Выполняем запрос к GraphQL API
     const response = await fetch(graphqlEndpoint, {
