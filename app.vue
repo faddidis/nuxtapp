@@ -1,5 +1,6 @@
 <template>
   <div>
+    <AppNavigation />
     <CartWidget ref="cartWidget" />
     <NuxtPage />
   </div>
