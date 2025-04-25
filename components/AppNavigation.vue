@@ -63,11 +63,7 @@
               </div>
 
               <div class="border-t border-gray-200 px-4 py-6">
-                <a href="#" class="-m-2 flex items-center p-2">
-                  <img src="https://tailwindui.com/plus-assets/img/flags/flag-canada.svg" alt="" class="block h-auto w-5 shrink-0" />
-                  <span class="ml-3 block text-base font-medium text-gray-900">CAD</span>
-                  <span class="sr-only">, change currency</span>
-                </a>
+                
               </div>
             </DialogPanel>
           </TransitionChild>
@@ -154,11 +150,7 @@
             </a>
 
             <div class="flex flex-1 items-center justify-end">
-              <a href="#" class="hidden text-gray-700 hover:text-gray-800 lg:flex lg:items-center">
-                <img src="https://tailwindui.com/plus-assets/img/flags/flag-canada.svg" alt="" class="block h-auto w-5 shrink-0" />
-                <span class="ml-3 block text-sm font-medium">CAD</span>
-                <span class="sr-only">, change currency</span>
-              </a>
+              
 
               <!-- Search -->
               <a href="#" class="ml-6 hidden p-2 text-gray-400 hover:text-gray-500 lg:block">
