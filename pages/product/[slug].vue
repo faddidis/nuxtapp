@@ -132,16 +132,21 @@ const { data, loading, error, fetch } = useQuery<{
 const product = computed(() => data.value?.product)
 
 // Следим за изменением маршрута (например, при переходе между товарами)
-watch(slug, (newSlug) => {
-  if (newSlug) {
+watch(slug, (newSlug, oldSlug) => {
+  if (newSlug && newSlug !== oldSlug) {
+    console.log('Slug changed, fetching new data...')
     fetch()
   }
 }, { immediate: true })
 
-// Явно вызываем fetch при монтировании компонента
+// Вызываем fetch только если данные еще не загружены
 onMounted(() => {
-  console.log('Product page mounted, fetching data...')
-  fetch()
+  if (!data.value) {
+    console.log('Product page mounted, fetching data...')
+    fetch()
+  } else {
+    console.log('Product data already loaded, skipping fetch')
+  }
 })
 
 const currentImage = ref<{ sourceUrl: string; altText: string } | null>(null)

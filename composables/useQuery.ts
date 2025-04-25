@@ -29,10 +29,29 @@ export function useQuery<T>(query: string, variables?: Record<string, any>) {
       data.value = response.data || null
       
       // Журналируем полученные данные
-      console.log(`Query data${isServer ? ' (SSR)' : ' (client)'}:`, 
-        JSON.stringify(data.value).substring(0, 100) + '...')
+      if (data.value) {
+        console.log(`Query data${isServer ? ' (SSR)' : ' (client)'}:`, 
+          JSON.stringify(data.value).substring(0, 100) + '...')
+      } else {
+        console.warn(`Query returned no data${isServer ? ' (SSR)' : ' (client)'}`)
+      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при загрузке данных'
+      let errorMessage = 'Произошла ошибка при загрузке данных'
+      
+      if (err instanceof Error) {
+        errorMessage = err.message
+        
+        // Специальная обработка ошибки URL
+        if (errorMessage.includes('Failed to parse URL')) {
+          console.error('URL Parse Error. Возможно, неправильно настроен эндпоинт GraphQL.')
+          
+          // Если на сервере, пытаемся использовать абсолютный URL
+          if (isServer) {
+            errorMessage += ' (Ошибка настройки эндпоинта GraphQL на сервере)'
+          }
+        }
+      }
+      
       error.value = errorMessage
       console.error(`Query Error${isServer ? ' (SSR)' : ' (client)'}:`, err)
       

@@ -43,13 +43,6 @@ export default defineNuxtConfig({
         '/catalog'
       ]
     },
-    devProxy: {
-      '/graphql': {
-        target: process.env.GRAPHQL_HTTP || 'https://wp.chinpoko.ru/graphql',
-        changeOrigin: true,
-        secure: false
-      }
-    },
     // Оптимизация серверной части
     minify: true,
     compressPublicAssets: true,
@@ -59,7 +52,7 @@ export default defineNuxtConfig({
         headers: { 'cache-control': 'public, max-age=31536000, immutable' }
       },
       // API запросы кэшируются на короткий срок
-      '/graphql': { 
+      '/api/graphql': { 
         cors: true,
         headers: { 'cache-control': 'no-cache' }
       },

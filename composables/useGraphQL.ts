@@ -23,12 +23,17 @@ interface GraphQLError {
 
 export const useGraphQL = () => {
   const config = useRuntimeConfig()
-  const endpoint = '/graphql' // Используем прокси-эндпоинт
+  
+  // На сервере используем полный URL, на клиенте - прокси
+  const endpoint = process.server 
+    ? config.public.graphqlHttp 
+    : '/api/graphql' // Используем новый путь для прокси
 
   const execute = async <T>(query: string, variables?: Record<string, any>): Promise<GraphQLResponse<T>> => {
     // Для отладки
     console.log('GraphQL Query:', query)
     console.log('GraphQL Variables:', variables)
+    console.log('Using GraphQL endpoint:', endpoint)
     
     try {
       const response = await fetch(endpoint, {
@@ -37,7 +42,9 @@ export const useGraphQL = () => {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        credentials: 'same-origin',
+        // Меняем настройки CORS в зависимости от среды
+        credentials: process.server ? 'include' : 'same-origin',
+        mode: process.server ? 'cors' : 'same-origin',
         body: JSON.stringify({
           query,
           variables,
