@@ -6,10 +6,7 @@ export default defineNuxtConfig({
   ssr: true,
   devtools: { enabled: true },
   compatibilityDate: '2025-04-24',
-  modules: [
-    '@nuxtjs/tailwindcss',
-    'nuxt-graphql-request'
-  ],
+  modules: ['@nuxtjs/tailwindcss', 'nuxt-graphql-request', '@nuxt/image'],
   runtimeConfig: {
     // приватные значения (server-only) можно указать здесь
     public: {
